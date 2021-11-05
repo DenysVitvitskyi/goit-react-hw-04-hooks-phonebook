@@ -1,25 +1,55 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from "react";
+import shortid from "shortid";
+import ContactList from "./Component/ContactList/ContactList";
+import ContactForm from "./Component/ContactForm/ContactForm";
+import Filter from "./Component/Filter/Filter";
+import "./App.css";
 
-function App() {
+export default function App() {
+  const [contacts, setContacts] = useState(
+    JSON.parse(localStorage.getItem("contacts"))
+  );
+  const [filter, setFilter] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem("contacts", JSON.stringify(contacts));
+  }, [contacts]);
+
+  const normalizeFilter = filter.toLowerCase();
+  const filterCurrentTel = contacts.filter((contact) =>
+    contact.name.toLowerCase().includes(normalizeFilter)
+  );
+
+  const addNewContact = (name, number) => {
+    const contact = {
+      id: shortid.generate(),
+      name,
+      number,
+    };
+    setContacts([contact, ...contacts]);
+  };
+
+  const findFilterValue = (e) => {
+    setFilter(e.target.value);
+  };
+
+  const removeContact = (name) => {
+    setContacts(contacts.filter((prevState) => prevState.name !== name));
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="wrap">
+      <h1 className="title">Phonebook</h1>
+      <ContactForm
+        filterContact={filterCurrentTel}
+        onAddContact={addNewContact}
+      />
+      <h2 className="title">Contacts</h2>
+      <Filter filter={filter} onFilter={findFilterValue} />
+      <ContactList
+        contacts={filterCurrentTel}
+        onDeleteContact={removeContact}
+      />
     </div>
   );
 }
-
-export default App;
